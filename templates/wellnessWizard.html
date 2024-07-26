@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellness Wizard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e8f5e9; /* Light green background color for a healthy vibe */
+            color: #2e7d32; /* Dark green text color */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for mode change */
+        }
+
+        .container {
+            max-width: 800px;
+            width: 80%;
+            margin: 40px auto; /* Margin for spacing from the top */
+            padding: 20px;
+            background-color: #ffffff; /* Light background color for the container */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #f1f8e9; /* Very light green background for the chat container */
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user-message, .bot-message {
+            border-radius: 10px;
+            padding: 10px 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #66bb6a; /* User message background color */
+            color: #ffffff; /* User message text color */
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #aed581; /* Bot message background color */
+            color: #ffffff; /* Bot message text color */
+        }
+
+        .user-name, .bot-name {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #66bb6a; /* Button background color */
+            color: #ffffff; /* Button text color */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1; /* Equal width for both buttons */
+        }
+
+        button:hover {
+            background-color: #4caf50; /* Button hover color */
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #263238; /* Dark background color */
+            color: #ffffff; /* Light text color for dark mode */
+        }
+
+        body.dark-mode .container {
+            background-color: #37474f; /* Dark background color for the container */
+        }
+
+        body.dark-mode .chat-container {
+            background-color: #455a64; /* Dark background color for the chat container */
+        }
+
+        body.dark-mode .user-message {
+            background-color: #66bb6a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .bot-message {
+            background-color: #558b2f; /* Dark background color for bot messages */
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wellness Wizard</h1>
+        <div class="chat-container" id="chat-container"></div>
+        <input type="text" id="prompt" placeholder="Enter your message here">
+        <div class="button-container">
+            <button onclick="sendRequest()">Send</button>
+            <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        </div>
+    </div>
+
+    <script>
+        var chatHistory = [];
+
+        function displayMessage(message, isUser) {
+            var chatContainer = document.getElementById('chat-container');
+            var messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            if (isUser) {
+                messageElement.innerHTML = '<div class="user-message"><span class="user-name">User:</span> ' + message + '</div>';
+            } else {
+                messageElement.innerHTML = '<div class="bot-message"><span class="bot-name">Wellness Wizard:</span> ' + message + '</div>';
+            }
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendRequest() {
+            var prompt = document.getElementById('prompt').value;
+            displayMessage(prompt, true);
+
+            var xhr = new XMLHttpRequest();
+            var url = "https://models3.p.rapidapi.com/";
+            var params = JSON.stringify({
+                "key1": "value",
+                "key2": "value"
+            });
+            var querystring = "model_id=27&prompt=" + encodeURIComponent(prompt);
+
+            xhr.open("POST", url + "?" + querystring, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-RapidAPI-Key", "ZZAOd9NUGtvNoyKmc-tnrw");
+            xhr.setRequestHeader("X-RapidAPI-Host", "models3.p.rapidapi.com");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    response = response['content'].replace("\n", "<br>");
+                    displayMessage(response, false);
+                    chatHistory.push({ question: prompt, answer: response });
+                }
+            };
+            xhr.send(params);
+            document.getElementById('prompt').value = '';
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>
