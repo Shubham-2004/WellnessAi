@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     
-    path('loginn/',views.loginn),
+    path('loginn/',views.loginn,name='loginn'),
     path('signup/',views.signup),
     path('logoutt/',views.logoutt),
     path('upload',views.upload),
@@ -34,10 +34,18 @@ urlpatterns = [
     path('search-results/', views.search_results, name='search_results'),
     path('follow', views.follow, name='follow'),
     path('dashboard/',views.dashboard,name='dashboard'),
+    path('dietplanner/',views.dietplanner,name='dietplanner'),
     path('meeting/',views.videocall,name='meeting'),
     path('logout/',views.logout_view, name='logout'),
+    path('esignup/',views.esignup,name='esignup'),
     path('join/',views.join_room, name='join_room'),
     path('',views.home),
+    path('hhome', views.hhome, name='hhome'),
+    path('<str:room>/', views.room, name='room'),
+    path('checkview', views.checkview, name='checkview'),
+    path('send', views.send, name='send'),
+    path('getMessages/<str:room>/', views.getMessages, name='getMessages'),
+
     
     
 ]

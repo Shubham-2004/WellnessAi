@@ -64,9 +64,16 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from . models import  Followers, LikePost, Post, Profile
 from django.db.models import Q
-
-
-
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect
+from .models import Room, Message
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse
+from django.conf import settings
 
 def signup(request):
  try:
@@ -306,6 +313,8 @@ def wellnessWizard(request):
 def dashboard(request):
     return render(request, 'dashboard.html', {'name': request.user.first_name})
 
+def dietplanner(request):
+    return render(request,'dietplanner.html')
 
 def videocall(request):
     return render(request, 'videocall.html', {'name': request.user.first_name + " " + request.user.last_name})
@@ -313,7 +322,8 @@ def videocall(request):
 def logout_view(request):
     logout(request)
     return redirect("/login")
-
+def esignup(request):
+    return render(request, 'esignup.html')
 
 def join_room(request):
     if request.method == 'POST':
@@ -324,3 +334,81 @@ def join_room(request):
         roomID = request.POST['roomID']
         return redirect("/meeting?roomID=" + roomID)
     return render(request, 'joinroom.html')
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+import json
+
+class ChatView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            body = json.loads(request.body)
+            user_message = body.get('message')
+
+            response = requests.post(
+                'https://chatapi.akash.network/api/v1/completions',
+                headers={
+                    'Authorization': 'Bearer sk-ZZAOd9NUGtvNoyKmc-tnrw',
+                    'Content-Type': 'application/json',
+                },
+                json={
+                    'model': 'llama3-8b',
+                    'messages': [
+                        {'role': 'user', 'content': user_message},
+                    ],
+                }
+            )
+
+            response_data = response.json()
+            bot_response = response_data['choices'][0]['message']['content'].strip()
+
+            return JsonResponse({'response': bot_response})
+
+        except Exception as e:
+            return JsonResponse({'error': 'An error occurred'}, status=500)
+def hhome(request):
+    return render(request, 'hhome.html')
+
+def room(request, room):
+    username = request.GET.get('username')
+    room_details = Room.objects.get(name=room)
+    return render(request, 'room.html', {
+        'username': username,
+        'room': room,
+        'room_details': room_details
+    })
+
+def checkview(request):
+    room = request.POST['room_name']
+    username = request.POST['username']
+
+    if Room.objects.filter(name=room).exists():
+        return redirect('/'+room+'/?username='+username)
+    else:
+        new_room = Room.objects.create(name=room)
+        new_room.save()
+        return redirect('/'+room+'/?username='+username)
+
+def send(request):
+    message = request.POST['message']
+    username = request.POST['username']
+    room_id = request.POST['room_id']
+
+    new_message = Message.objects.create(value=message, user=username, room=room_id)
+    new_message.save()
+    return HttpResponse('Message sent successfully')
+
+def getMessages(request, room):
+    room_details = Room.objects.get(name=room)
+
+    messages = Message.objects.filter(room=room_details.id)
+    return JsonResponse({"messages":list(messages.values())})
+
